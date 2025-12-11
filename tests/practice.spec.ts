@@ -1,6 +1,8 @@
-import {test, expect} from '@playwright/test'
+import {test, expect, request} from '@playwright/test'
 import path from 'path';
 import fs from 'fs';
+import { waitForDebugger } from 'inspector';
+import { userInfo } from 'os';
 
 //1. browser launch
 test('browser context', async ({browser})=>{
@@ -188,4 +190,154 @@ test('alerts', async ({page})=>{
     await page.locator('#promptBtn').click();
     await expect(page.locator('#demo')).toContainText('Jack');
     
+})
+
+
+//11. API handling
+const postURL= "https://rahulshettyacademy.com/api/ecom/auth/login"
+const payload = {userEmail: "tonystark@breakpoint.com", userPassword: "Breakpoint!98"}
+
+test('login via API', async ({page})=>{
+    const apiContext = await request.newContext();
+    const pageResponse = await apiContext.post(postURL,
+        {
+            data:payload
+        }
+    )
+
+    expect(pageResponse.status()).toBe(200)
+
+    const pageData = await pageResponse.json();
+
+    expect(pageData.message).toContain("Login Successfully")
+
+    let token = pageData.token;
+
+    await page.addInitScript((value)=>{
+        window.localStorage.setItem("token",value)
+    },token)
+
+    page.goto("https://rahulshettyacademy.com/client/#/auth/login")
+    await page.waitForTimeout(5000);
+})
+
+//12. Static Calendar handling
+test('Calendar handling', async({page})=>{
+    await page.goto('https://www.hyrtutorials.com/p/calendar-practice.html')
+
+    await page.locator('.ui-datepicker-trigger').click();
+
+    const day = "5";
+    const month = "June";
+    const year = "2027";
+
+    const monthPicker = page.locator('.ui-datepicker-month');
+    const yearPicker = page.locator('.ui-datepicker-year');
+
+    while((await monthPicker.textContent()!=month) || (await yearPicker.textContent()!=year)){
+        await page.getByText('Next').click();
+    }
+
+    await page.getByText(day, {exact:true}).click();
+
+    await expect(page.locator('#sixth_date_picker').first()).toHaveValue('06/05/2027')
+})
+
+//13. Dynamic Calendar handling
+test('Dynamic calendar handling', async({page})=>{
+
+    const targetDay = 15;
+    const targetMonth = "July";
+    const targetYear = 2023;
+
+    await page.goto('https://www.hyrtutorials.com/p/calendar-practice.html')
+    await page.locator('.ui-datepicker-trigger').click();
+
+    const monthPicker = page.locator('.ui-datepicker-month');
+    const yearPicker = page.locator('.ui-datepicker-year')
+
+    const months = ["January", "February", "March", "April", "May", "June", "July",
+        "August", "September", "October", "November", "December"]
+    
+    function getMonthIndex(month){
+        return months.indexOf(month);
+    }
+
+    while(true){
+        const currentMonth = await monthPicker.textContent();
+        const currentYear = Number(await yearPicker.textContent());
+
+        if(currentMonth==targetMonth && currentYear==targetYear){
+            break;
+        }
+
+        const currentMonthNumber  = getMonthIndex(currentMonth);
+        const targetMonthNumber = getMonthIndex(targetMonth);
+
+
+        if(currentYear > targetYear || (currentYear == targetYear && currentMonthNumber > targetMonthNumber)){
+            await page.getByText('Prev').last().click();
+        }
+        else{
+            await page.getByText('Next').click();
+        }
+    }
+
+    await page.getByText(targetDay.toString(), {exact:true}).last().click();
+
+    const expectedMonthNumber = (getMonthIndex(targetMonth)+1).toString().padStart(2,"0");
+    const expectedDayNumber = targetDay.toString().padStart(2,"0");
+
+    const expectedDate= `${expectedMonthNumber}/${expectedDayNumber}/${targetYear}`;
+
+    expect(page.locator('#sixth_date_picker')).toHaveValue(expectedDate);
+
+})
+
+test.only('e2e', async({page})=>{
+
+    const email = "tonystark@breakpoint.com";
+    const password = "Breakpoint!98";
+    const productName = "ZARA COAT 3";
+    const country = "Afghanistan";
+
+    //Login
+    await page.goto("https://rahulshettyacademy.com/client/#/auth/login");
+    await page.getByPlaceholder('email@example.com').fill(email);
+    await page.getByPlaceholder('enter your passsword').fill(password);
+    await page.locator('#login').click();
+    await expect(page.getByText('Automation Practice')).toBeVisible();
+
+    //add product to cart
+    const productsList = page.locator('div.card-body')
+    await productsList.last().waitFor();
+    await productsList.filter({hasText:`${productName}`}).locator('button').last().click();
+    await expect(page.locator('#toast-container')).toContainText("Product Added To Cart")
+
+    await page.locator("button[routerlink='/dashboard/cart']").click();
+    await expect(page.getByText('My Cart',{exact:true})).toBeVisible();
+
+    const productsInCart = page.locator('div.infoWrap')
+    await expect(productsInCart.filter({hasText:`${productName}`}).locator('h3')).toContainText(productName);
+    await page.getByText('Checkout', {exact:true}).click();
+    await expect(page.locator('div.user__name label')).toContainText(email);
+    await page.getByPlaceholder('Select Country').pressSequentially(country);
+    
+    const countryList = page.locator('section.ta-results button')
+    await countryList.last().waitFor();
+
+    await countryList.filter({hasText:`${country}`}).last().click();
+    await page.getByText('Place Order ',{exact:true}).click();
+
+    await expect(page.locator('h1.hero-primary')).toContainText('Thankyou for the order.');
+
+    const rawOrderId = await page.locator('label.ng-star-inserted').textContent();
+    const orderId = rawOrderId?.replaceAll("|","").trim();
+    await page.locator("button[routerlink='/dashboard/myorders']").click();
+
+    const rowsCount  = page.locator('Table tbody tr');
+    await rowsCount.filter({hasText:`${productName}`}).locator('button').first().click();
+
+    await expect(page.locator('div.col-text')).toContainText(orderId)
+
 })
