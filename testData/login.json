@@ -1,0 +1,7 @@
+{
+    "url":"https://rahulshettyacademy.com/client/#/auth/login",
+    "userName": "tonystark@breakpoint.com",
+    "password": "Breakpoint!98",
+    "incorrectPassword": "Breadsds",
+    "erroMessage": "Incorrect email or password."
+}
