@@ -7,7 +7,8 @@
     "test:qa": "set ENV=qa&& npx playwright test",
     "test:smoke": "npx playwright test tests/annotations.spec.ts --grep @smoke",
     "allure:report": "npx allure serve allure-results",
-    "html:report": "npx playwright show-report"
+    "html:report": "npx playwright show-report",
+    "test:practice": "npx playwright test tests/practice2.spec.ts"
   },
   "keywords": [],
   "author": "",
