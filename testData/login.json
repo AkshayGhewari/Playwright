@@ -1,7 +1,10 @@
 {
     "url":"https://rahulshettyacademy.com/client/#/auth/login",
     "userName": "tonystark@breakpoint.com",
+    "incorrectFormatUserName": "tonystarkbreakpoint.com",
     "password": "Breakpoint!98",
     "incorrectPassword": "Breadsds",
-    "erroMessage": "Incorrect email or password."
+    "errorMessage": "Incorrect email or password.",
+    "productName": "ZARA COAT 3",
+    "incorrectProductName": "ABCD"
 }

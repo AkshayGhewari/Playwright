@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import { LoginPage } from '../pages/loginPage';
+import { LoginPage } from '../pages/LoginPage2';
 import { DashboardPage } from '../pages/DashboardPage';
 
 let url = "https://rahulshettyacademy.com/client/#/auth/login"
