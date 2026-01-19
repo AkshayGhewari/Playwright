@@ -15,9 +15,9 @@ import {test, expect} from '@playwright/test';
 
 test.describe.configure({mode:'parallel', retries:2, timeout:10000})
 
-test.describe('Annotations tests', async()=>{
+test.describe('Annotations tests', async function(){
 
-test('test1', ({})=>{
+test('test1', ({page})=>{
     test.step('login into app', async()=>{
         console.log('login');
     })

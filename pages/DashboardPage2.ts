@@ -1,6 +1,6 @@
 import { Locator, Page } from "playwright";
 
-export class DashboardPage {
+export class DashboardPage2 {
   private testPage;
   private searchInput;
   private products;

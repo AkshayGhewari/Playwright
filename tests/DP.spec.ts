@@ -1,14 +1,14 @@
 import { test,expect } from '@playwright/test';
-import { LoginPage } from '../pages/loginPage';
-import { DashboardPage } from '../pages/DashboardPage';
+import { LoginPage2 } from '../pages/LoginPage2';
+import { DashboardPage2 } from '../pages/DashboardPage2';
 import products from '../testData/dpData.json'
 
 let loginPage:any;
 let dashboardPage: any;
 
 test.beforeEach('Create object ,launch URL and login', async({page})=>{
-    loginPage = new LoginPage(page);
-    dashboardPage = new DashboardPage(page);
+    loginPage = new LoginPage2(page);
+    dashboardPage = new DashboardPage2(page);
 })
 
 for(let product of products){

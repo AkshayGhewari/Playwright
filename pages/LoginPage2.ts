@@ -1,6 +1,6 @@
 import {Locator, Page} from 'playwright';
 
-export class LoginPage{
+export class LoginPage2{
 
     private testPage;
     private username: Locator

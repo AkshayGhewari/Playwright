@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:qa": "set ENV=qa&& npx playwright test",
+    "test:qa": "set ENV=qa&& npx playwright test tests/LoginPageTestsENV.spec.ts",
+    "test:stg": "set ENV=staging&& npx playwright test tests/LoginPageTestsENV.spec.ts",
     "test:smoke": "npx playwright test tests/annotations.spec.ts --grep @smoke",
     "allure:report": "npx allure serve allure-results",
     "html:report": "npx playwright show-report",

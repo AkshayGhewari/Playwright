@@ -10,6 +10,8 @@ let dashboardPage: DashboardPage;
 let forgotPasswordPage: ForgotPasswordPage;
 let registerUserPage: RegisterUserPage;
 
+test.describe.configure({mode:'parallel', retries:2, timeout:10000})
+
 test.beforeEach("Create Objects and launch URL", async ({ page }) => {
   loginPage = new LoginPage(page);
   dashboardPage = new DashboardPage(page);
@@ -18,14 +20,14 @@ test.beforeEach("Create Objects and launch URL", async ({ page }) => {
   await loginPage.launchURL(loginData.url);
 });
 
-test.describe("Login validations", () => {
+test.describe("Login validations", {tag:['@smoke', '@regression']}, () => {
   test("login by keeping username and password fields empty", async () => {
     await loginPage.login("", "");
     await expect(loginPage.emailRequiredError).toBeVisible();
     await expect(loginPage.passwordRequiredError).toBeVisible();
   });
-
-  test("login by only entering email", async () => {
+  
+  test("login by only entering email", {tag:'@smoke'}, async () => {
     await loginPage.login(loginData.userName, "");
     await expect(loginPage.passwordRequiredError).toBeVisible();
   });
