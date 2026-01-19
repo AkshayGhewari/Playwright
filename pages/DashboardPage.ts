@@ -1,56 +1,80 @@
 import { Locator, Page } from "playwright";
 
-export class DashboardPage{
+export class DashboardPage {
+  private page;
+  homePageIdentifier: Locator;
+  private searchField: Locator;
+  private minPriceField: Locator;
+  private maxPriceField: Locator;
+  private resultNumber: Locator;
+  private products;
+  successfulToast;
 
-    private testPage;
-    private searchInput;
-    private products;
-    homePageIdentifier
-    addToCartSuccessMessage;
-    private viewPageProductName;
-    private viewPageProductPrice;
-    homePageProductPrice;
+  constructor(page: Page) {
+    this.page = page;
+    this.homePageIdentifier = this.page.getByText("Automation Practice", {exact: true});
+    this.searchField = this.page.getByRole('textbox', { name: 'search' })
+    this.minPriceField = this.page.getByRole('textbox', { name: 'Min Price' })
+    this.maxPriceField = this.page.getByRole('textbox', { name: 'Max Price' })
+    this.resultNumber = this.page.locator('div#res')
+    this.products = this.page.locator("div.card-body");
+    this.successfulToast = this.page.locator('#toast-container')
+  }
 
-    constructor(page:Page){
-        this.testPage= page;
-        this.products = this.testPage.locator('div.card-body')
-        this.homePageIdentifier = this.testPage.getByText('Automation Practice', {exact:true})
-        this.addToCartSuccessMessage = this.testPage.locator('#toast-container');
-        this.viewPageProductName = this.testPage.locator('div.rtl-text h2');
-        this.viewPageProductPrice = this.testPage.locator('div.rtl-text h3');
+  async filterProductBySearch(productName: string){
+    await this.searchField.fill(productName);
+    await this.page.keyboard.press('Enter');
+  }
+
+  async filterProductByMinMaxPrice(minimumPrice:string, maximumPrice:string){
+    await this.minPriceField.fill(minimumPrice);
+    await this.maxPriceField.fill(maximumPrice);
+    await this.page.keyboard.press('Enter');
+  }
+
+  async getNumberOfResults(){
+    let resultText = await this.resultNumber.textContent();
+    if (!resultText) {
+        throw new Error('Result text is empty or not found');
     }
+    let resultNumber = resultText.split(" ")[1];
+    return Number(resultNumber);
+  }
 
-    async searchAndAddProductToCart(productName){
-
+  async getProductNames(){
     await this.products.last().waitFor();
+    const countOfProducts = await this.products.count();
+    const productNames = [];
 
-    const countOfProducts =await this.products.count();
-
-    for(let i=0; i<countOfProducts; i++){
-        const productText = await this.products.nth(i).locator('h5').textContent()
-
-        if(productText === productName){
-            await this.products.nth(i).locator('button').last().click();
-            break;
+    let productText;
+    for(let i=0; i<countOfProducts;i++){
+      productText = await this.products.nth(i).locator('h5').textContent();
+      if (productText) {
+            productNames.push(productText);
         }
     }
-    }
+    return productNames;
+  }
 
-    async searchAndValidateProductDetails(productName){
+  async getProductPrices(){
+    await this.products.last().waitFor();
+    const countOfProducts = await this.products.count();
+    const productPrices = [];
 
-        await this.products.last().waitFor();
-
-    const countOfProducts =await this.products.count();
-
-    for(let i=0; i<countOfProducts; i++){
-        const productText = await this.products.nth(i).locator('h5').textContent()
-
-        if(productText === productName){
-            this.homePageProductPrice = this.products.nth(i).locator("div.text-muted").textContent();
-            await this.products.nth(i).locator('button').first().click();
-            break;
+    let productPrice;
+    let price;
+    for(let i=0; i<countOfProducts;i++){
+      productPrice = await this.products.nth(i).locator('.text-muted').textContent()
+      if (productPrice) {
+            price = Number(productPrice.split(" ")[1]);
+            productPrices.push(price);
         }
     }
-    }
+    return productPrices;
+  }
 
+  async addProductToCart(productName:string){
+    await this.products.last().waitFor();
+    await this.products.filter({hasText: `${productName}`}).locator('button').last().click();
+  }
 }

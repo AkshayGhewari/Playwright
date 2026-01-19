@@ -1,75 +1,105 @@
-//URL
+import {test, expect, request } from '@playwright/test'
 
-//Request format
-    //URL
-    //HTTP method
-    //Headers
-    //Body
+test('login', async ()=>{
 
-//Response format
-    //Status code
-    //Headers
-    //Response body
+const loginURL = "https://restful-booker.herokuapp.com/auth";
+const loginPayload = {"username" : "admin", "password" : "password123"}
 
-import {test, expect, request} from '@playwright/test'
-
-const postURL = "https://rahulshettyacademy.com/api/ecom/auth/login";
-const payload = {userEmail: "tonystark@breakpoint.com", userPassword: "Breakpoint!98"}
-
-const orderURL = "https://rahulshettyacademy.com/api/ecom/order/create-order"
-const orderPayload = {orders: [{country: "India", productOrderedId: "68a961459320a140fe1ca57a"}]}
-
-
-let token;
-let orderId;
-let productName = "ZARA COAT 3";
-let country = "India";
-let userName = "tonystark@breakpoint.com";
-let password = "Breakpoint!98";
-
-test.beforeAll('get token from post API call', async()=>{
-    //API context: Will help us in calling diff APIs
     const apiContext = await request.newContext();
-    const postResponse = await apiContext.post(postURL,
+    const postResponse = await apiContext.post(loginURL,
         {
-            data: payload
+            data: loginPayload
         }
     )
-    expect(postResponse.status()).toBe(200);
+    expect(postResponse.status()).toEqual(200);
 
-    const postData = await postResponse.json();
-    expect(await postData.message).toContain('Login Successfully');
-
-    token = postData.token
-    console.log(token)
-
-    const orderResponse = await apiContext.post(orderURL,
-        {
-            data: orderPayload,
-            headers:{
-                "authorization": token
-            }
-        })
-
-    const orderJsonResponse = await orderResponse.json()
-    orderId =  await orderJsonResponse.orders[0];
+    const responseBody = await postResponse.json();
+    const token = await responseBody.token;
+    console.log(token);
 })
 
+test('get booking details', async ()=>{
+    const bookingDetailsURL = "https://restful-booker.herokuapp.com/booking/1"
 
-test('cart test using filter', async ({page})=>{
+    const apiContext = await request.newContext();
+    const postResponse = await apiContext.get(bookingDetailsURL)
+    expect(postResponse.status()).toEqual(200)
 
-    await page.addInitScript((value)=>{
-        window.localStorage.setItem("token",value);
-    },token)
+    const responseBody = await postResponse.json();
 
-    await page.goto("https://rahulshettyacademy.com/client/#/auth/login")
+    expect(responseBody.firstname).toEqual('Sally')
+    expect(responseBody.lastname).toEqual('Jones')
+    expect(responseBody.totalprice).toEqual(524)
+    expect(responseBody.bookingdates.checkin).toEqual("2019-03-23")
+    expect(responseBody.bookingdates.checkout).toEqual("2025-03-07")
+})
 
-    console.log(orderId);
+test('create booking', async ()=>{
+    const bookingURL = "https://restful-booker.herokuapp.com/booking"
+    const bookingPayload = {
+    "firstname" : "Jim",
+    "lastname" : "Brown",
+    "totalprice" : 111,
+    "depositpaid" : true,
+    "bookingdates" : {
+        "checkin" : "2018-01-01",
+        "checkout" : "2019-01-01"
+    },
+    "additionalneeds" : "Breakfast"}
 
-    await page.locator('button[routerlink="/dashboard/myorders"]').click();
-    await expect(page.locator('table tbody')).toBeVisible();
-     const rows = page.locator('table tbody tr');
-     rows.filter({hasText: `${orderId}`}).locator('button').first().click()
-     await expect(page.locator('div.col-text')).toHaveText(orderId);
-     await expect(page.locator('div.address p').first()).toHaveText(userName)
+    const apiContext = await request.newContext();
+    const pageResponse = await apiContext.post(bookingURL,
+        {
+            data: bookingPayload
+        }
+    )
+    
+    expect(pageResponse.status()).toEqual(200);
+
+    const responseBody = await pageResponse.json();
+    expect(responseBody.booking.firstname).toEqual('Jim')
+    expect(responseBody.booking.lastname).toEqual('Brown')
+    expect(responseBody.booking.totalprice).toEqual(111)
+    expect(responseBody.booking.depositpaid).toEqual(true)
+    expect(responseBody.booking.bookingdates.checkin).toEqual("2018-01-01")
+    expect(responseBody.booking.bookingdates.checkout).toEqual("2019-01-01")
+    expect(responseBody.booking.additionalneeds).toEqual('Breakfast')
+})
+
+test('delete booking', async ()=>{
+    const bookingURL = "https://restful-booker.herokuapp.com/booking/"
+    const bookingPayload = {
+    "firstname" : "Jim",
+    "lastname" : "Brown",
+    "totalprice" : 111,
+    "depositpaid" : true,
+    "bookingdates" : {
+        "checkin" : "2018-01-01",
+        "checkout" : "2019-01-01"
+    },
+    "additionalneeds" : "Breakfast"}
+
+    const apiContext = await request.newContext();
+    const pageResponse = await apiContext.post(bookingURL,
+        {
+            data: bookingPayload
+        }
+    )
+    
+    expect(pageResponse.status()).toEqual(200);
+
+    const responseBody = await pageResponse.json();
+    const bookingId = await responseBody.bookingid;
+    console.log(bookingId)
+
+    const deleteRes = await apiContext.delete(bookingURL + bookingId, {
+    headers: {
+        'Authorization': 'Basic YWRtaW46cGFzc3dvcmQxMjM='
+    }
+});
+
+     expect(deleteRes.status()).toEqual(201)
+
+    const responseText = await deleteRes.text();
+    expect(responseText).toContain('Created');
 })
