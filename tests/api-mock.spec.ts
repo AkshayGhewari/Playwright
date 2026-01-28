@@ -42,4 +42,16 @@ test('mock api', async ({page})=>{
     await page.goto('https://demo.playwright.dev/api-mocking/')
     const num = await (page.getByText('playwright text')).count();
     console.log(num);
+
+    await page.route('', async route =>{
+        const json =[
+            {}
+        ]
+        await route.fulfill({json})
+    })
+    await page.goto(';')
+
+    await expect(page).toHaveScreenshot({path:'asd'})
+
+
 })

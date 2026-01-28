@@ -8,6 +8,6 @@ test('new', async ({page})=>{
 	await page.waitForSelector('', {state: 'visible'})
 
 	await page.locator('').click()
-	
+
 	let num = 100;
 })

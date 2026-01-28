@@ -47,7 +47,7 @@ test('test5',{tag: '@smoke'}, ({})=>{
     console.log('test5')
 })
 
-test('test6',{tag: ['@smoke', '@regression']}, ({})=>{
+test('test6',{tag: ['@smoke', '@regression']}, ({page})=>{
     console.log('test6')
 })
 
