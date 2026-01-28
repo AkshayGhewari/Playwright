@@ -37,7 +37,7 @@ test.describe("Login validations", {tag:['@smoke', '@regression']}, () => {
     await expect(loginPage.emailRequiredError).toBeVisible();
   });
 
-  test("login by entering invalid email and password", async () => {
+  test("login by entering invalid email and password", async function() {
     await loginPage.login(loginData.userName, loginData.incorrectPassword);
     await expect(loginPage.errorMessage).toContainText(loginData.errorMessage);
   });
