@@ -20,6 +20,18 @@ test("checkbox and radiom buttons", async ({ page }) => {
   await expect(page.locator("#sunday")).not.toBeChecked();
 });
 
+test("checkbox and radiom buttons333", async ({ page }) => {
+  await page.goto("https://testautomationpractice.blogspot.com/");
+  await page.locator("#male").check();
+  await expect(page.locator("#male")).toBeChecked();
+
+  await expect(page.locator("#sunday")).not.toBeChecked();
+  await page.locator("#sunday").check();
+  await expect(page.locator("#sunday")).toBeChecked();
+  await page.locator("#sunday").uncheck();
+  await expect(page.locator("#sunday")).not.toBeChecked();
+});
+
 test("mouse operations", async ({ page }) => {
   await page.goto("https://testautomationpractice.blogspot.com/");
   await page.getByText("Copy Text", { exact: true }).dblclick();
