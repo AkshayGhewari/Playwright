@@ -20,7 +20,7 @@ test("checkbox and radiom buttons", async ({ page }) => {
   await expect(page.locator("#sunday")).not.toBeChecked();
 });
 
-test("checkbox and radiom buttons333", async ({ page }) => {
+test("checkbox and radiom buttons22", async ({ page }) => {
   await page.goto("https://testautomationpractice.blogspot.com/");
   await page.locator("#male").check();
   await expect(page.locator("#male")).toBeChecked();
